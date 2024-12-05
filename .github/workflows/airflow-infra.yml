@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - Airflow.Dockerfile
+      - docker-compose-airflow.yml
+      - requirements.txt
+    branches: [ main ]
+
+jobs:
+  airflow_infra:
+    runs-on: [ self-hosted ]
+    steps:
+        - name: Checkout code
+        - uses: actions/checkout@v4.2.2
+
+        - name : Create .env file
+          shell : bash
+          run : ls
+        
