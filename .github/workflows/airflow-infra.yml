@@ -10,7 +10,7 @@ on:
     branches: [ main ]
 
 jobs:
-  airflow_infra:
+  airflow-setup:
     runs-on: [ self-hosted ]
     steps:
         - name: Checkout code
@@ -34,4 +34,21 @@ jobs:
               echo "ENV 파일 생성 실패"
               exit 1
             fi
-          
+  
+  docker-build:
+    runs-on: [ self-hosted ]
+    steps:
+      - name : Docker file build
+        shell : bash
+        run : |
+          docker compose -f docker-compose-airflow.yml down
+          docker compose -f docker-compose-airflow.yml --build
+
+  airflow-sevice_run:
+      runs-on: [ self-hosted ]
+      steps:
+        - name : Docker file build
+          shell : bash
+          run : |
+            docker compose -f docker-compose-airflow.yml up -d
+            docker image prune -a
