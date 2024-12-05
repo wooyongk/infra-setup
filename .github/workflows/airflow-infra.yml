@@ -1,4 +1,4 @@
-name: CI
+name: Setup-Airflow
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
     branches: [ main ]
 
 jobs:
-  airflow-setup:
+  airflow-env-setup:
     runs-on: [ self-hosted ]
     steps:
         - name: Checkout code
@@ -36,7 +36,7 @@ jobs:
             fi
   
   docker-build:
-    needs: airflow-setup
+    needs: airflow-env-setup
     runs-on: [ self-hosted ]
     steps:
       - name : Docker file build
@@ -45,7 +45,7 @@ jobs:
           docker compose -f docker-compose-airflow.yml down
           docker compose -f docker-compose-airflow.yml build
 
-  airflow-sevice_run:
+  airflow-sevice-run:
       needs: docker-build
       runs-on: [ self-hosted ]
       steps:
