@@ -53,4 +53,8 @@ jobs:
           shell : bash
           run : |
             docker compose -f docker-compose-airflow.yml up -d
+
+        - name : Clean Docker image
+          shell : bash
+          run : |
             docker image prune -a
