@@ -36,18 +36,20 @@ jobs:
             fi
   
   docker-build:
+    needs: airflow-setup
     runs-on: [ self-hosted ]
     steps:
       - name : Docker file build
         shell : bash
         run : |
           docker compose -f docker-compose-airflow.yml down
-          docker compose -f docker-compose-airflow.yml --build
+          docker compose -f docker-compose-airflow.yml build
 
   airflow-sevice_run:
+      needs: docker-build
       runs-on: [ self-hosted ]
       steps:
-        - name : Docker file build
+        - name : Run Airflow
           shell : bash
           run : |
             docker compose -f docker-compose-airflow.yml up -d
