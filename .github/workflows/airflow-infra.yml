@@ -25,6 +25,10 @@ jobs:
             echo "_AIRFLOW_WWW_USER_PASSWORD=${{ secrets._AIRFLOW_WWW_USER_PASSWORD }}" >> .env
             echo "_AIRFLOW_WWW_USER_FIRSTNAME=${{ secrets._AIRFLOW_WWW_USER_FIRSTNAME }}" >> .env
             echo "_AIRFLOW_WWW_USER_LASTNAME=${{ secrets._AIRFLOW_WWW_USER_LASTNAME }}" >> .env
+            echo "R2_FOLDER=${{ secrets.R2_FOLDER }}" >> .env
+            echo "R2_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }}" >> .env
+            echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env
+            echo "R2_ENDPOINT_URL=${{ secrets.R2_ENDPOINT_URL }}" >> .env
 
         - name: Verify env file
           run: |
@@ -58,3 +62,4 @@ jobs:
           shell : bash
           run : |
             docker image prune -a
+            sudo rm -rf .env

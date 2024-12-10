@@ -7,14 +7,25 @@ x-airflow-common:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
     AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
-    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: True
+    AIRFLOW__CORE__LOAD_EXAMPLES: False
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
-    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: True
     AIRFLOW__CORE__DEFAULT_TIMEZONE: 'Asia/Seoul'
     AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE: 'Asia/Seoul'
-    AIRFLOW__METRICS__STATSD_ON: 'true'
+    AIRFLOW__METRICS__STATSD_ON: True
     AIRFLOW__SCHEDULER__STATSD_HOST: 'statsd-exporter'
+    AIRFLOW__LOGGING__REMOTE_LOGGING: True
+    AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: 'R2'
+    AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: 's3://${R2_FOLDER}'
+    AIRFLOW__LOGGING__DELETE_LOCAL_LOGS: True
+    AIRFLOW_CONN_R2: '{
+                        "conn_type": "aws",
+                        "login": "${R2_ACCESS_KEY}",
+                        "password": "${R2_SECRET_ACCESS_KEY}",
+                        "extra": {"service_config": {"s3": {"endpoint_url": "${R2_ENDPOINT_URL}"}}}
+                      }'
+
   volumes:
     - airflow-dags-volume:/opt/airflow/dags
     - airflow-logs-volume:/opt/airflow/logs
@@ -40,7 +51,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4G
+          memory: 8G
 
   airflow-scheduler:
     <<: *airflow-common
@@ -59,7 +70,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 6G  
+          memory: 4G  
 
   airflow-triggerer:
     <<: *airflow-common
@@ -114,7 +125,7 @@ services:
       GIT_BRANCH: main
       DIRECTORY_NAME: project
       DESTINATION_PATH: /app/sync 
-      SUBFOLDER_PATH: /airflow/dags
+      SUBFOLDER_PATH: /airflow/dagsc
       INTERVAL: 10
     volumes:
       - airflow-dags-volume:/app/sync
