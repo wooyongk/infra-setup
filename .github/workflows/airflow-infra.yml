@@ -62,5 +62,7 @@ jobs:
           shell : bash
           run : |
             docker image prune -a
-            sudo rm -rf .env
-            git clean -ffdx && git reset --hard HEAD
+
+        - name: clean up runner
+          uses: eviden-actions/clean-self-hosted-runner@v1.3.16
+          if: ${{ always() }}
