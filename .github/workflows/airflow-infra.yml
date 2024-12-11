@@ -63,3 +63,4 @@ jobs:
           run : |
             docker image prune -a
             sudo rm -rf .env
+            git clean -ffdx && git reset --hard HEAD
