@@ -40,8 +40,8 @@ jobs:
         shell: bash
         run: |
           docker compose -f docker-compose-flyway.yml up -d --build
-          docker-compose -f docker-compose-flyway.yml logs flyway
-          docker-compose -f docker-compose-flyway.yml rm -fsv
+          docker compose -f docker-compose-flyway.yml logs flyway
+          docker compose -f docker-compose-flyway.yml rm -fsv
 
   clean-up:
     needs: docker-run
