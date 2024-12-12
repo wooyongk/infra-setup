@@ -1,30 +1,30 @@
-x-airflow-common:
-  &airflow-common
-  build: 
+x-airflow-common: &airflow-common
+  build:
     dockerfile: Airflow.Dockerfile
-  environment:
-    &airflow-common-env
+  environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
     AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: True
     AIRFLOW__CORE__LOAD_EXAMPLES: False
-    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
+    AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: True
-    AIRFLOW__CORE__DEFAULT_TIMEZONE: 'Asia/Seoul'
-    AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE: 'Asia/Seoul'
+    AIRFLOW__CORE__DEFAULT_TIMEZONE: "Asia/Seoul"
+    AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE: "Asia/Seoul"
     AIRFLOW__METRICS__STATSD_ON: True
-    AIRFLOW__SCHEDULER__STATSD_HOST: 'statsd-exporter'
+    AIRFLOW__SCHEDULER__STATSD_HOST: "statsd-exporter"
     AIRFLOW__LOGGING__REMOTE_LOGGING: True
-    AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: 'R2'
-    AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: 's3://${R2_FOLDER}'
+    AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: "R2"
+    AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: "s3://${R2_FOLDER}"
     AIRFLOW__LOGGING__DELETE_LOCAL_LOGS: True
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
+    AIRFLOW__CORE__ENABLE_XCOM_PICKLING: True
     AIRFLOW_CONN_R2: '{
-                        "conn_type": "aws",
-                        "login": "${R2_ACCESS_KEY}",
-                        "password": "${R2_SECRET_ACCESS_KEY}",
-                        "extra": {"service_config": {"s3": {"endpoint_url": "${R2_ENDPOINT_URL}"}}}
-                      }'
+      "conn_type": "aws",
+      "login": "${R2_ACCESS_KEY}",
+      "password": "${R2_SECRET_ACCESS_KEY}",
+      "extra": {"service_config": {"s3": {"endpoint_url": "${R2_ENDPOINT_URL}"}}}
+      }'
 
   volumes:
     - airflow-dags-volume:/opt/airflow/dags
@@ -70,14 +70,18 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4G  
+          memory: 4G
 
   airflow-triggerer:
     <<: *airflow-common
     container_name: airflow-triggerer
     command: triggerer
     healthcheck:
-      test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
+      test:
+        [
+          "CMD-SHELL",
+          'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"',
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -92,7 +96,7 @@ services:
           memory: 2G
 
   airflow-init:
-    << : *airflow-common
+    <<: *airflow-common
     container_name: airflow-init
     entrypoint: /bin/bash
     command:
@@ -111,24 +115,24 @@ services:
     container_name: airflow-statsd-exporter
     command: "--statsd.listen-udp=:8125 --web.listen-address=:9102"
     ports:
-        - 9123:9102
-        - 8125:8125/udp
+      - 9123:9102
+      - 8125:8125/udp
     depends_on:
       airflow-init:
         condition: service_completed_successfully
 
   git-sync:
     image: databurst/git-sync:latest
-    container_name : git-sync
+    container_name: git-sync
     environment:
       REPO_URL: https://github.com/wooyongk/data-engineering-project.git
       GIT_BRANCH: main
       DIRECTORY_NAME: project
-      DESTINATION_PATH: /app/sync 
-      SUBFOLDER_PATH: /airflow/dagsc
+      DESTINATION_PATH: /app/sync
+      SUBFOLDER_PATH: /airflow/dags
       INTERVAL: 10
     volumes:
-      - airflow-dags-volume:/app/sync
+      - airflow-dags-volume:/app/sync/dags
     depends_on:
       airflow-init:
         condition: service_completed_successfully

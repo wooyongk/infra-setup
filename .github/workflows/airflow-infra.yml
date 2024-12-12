@@ -7,62 +7,63 @@ on:
       - Airflow.Dockerfile
       - docker-compose-airflow.yml
       - requirements.txt
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   airflow-env-setup:
-    runs-on: [ self-hosted ]
+    runs-on: [self-hosted]
     steps:
-        - name: Checkout code
-          uses: actions/checkout@v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
 
-        - name : Create .env file
-          shell : bash
-          run :  |
-            echo "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${{ secrets.AIRFLOW__DATABASE__SQL_ALCHEMY_CONN }}" >> .env
-            echo "AIRFLOW__CORE__FERNET_KEY=${{ secrets.AIRFLOW__CORE__FERNET_KEY }}" >> .env
-            echo "_AIRFLOW_WWW_USER_USERNAME=${{ secrets._AIRFLOW_WWW_USER_USERNAME }}" >> .env
-            echo "_AIRFLOW_WWW_USER_PASSWORD=${{ secrets._AIRFLOW_WWW_USER_PASSWORD }}" >> .env
-            echo "_AIRFLOW_WWW_USER_FIRSTNAME=${{ secrets._AIRFLOW_WWW_USER_FIRSTNAME }}" >> .env
-            echo "_AIRFLOW_WWW_USER_LASTNAME=${{ secrets._AIRFLOW_WWW_USER_LASTNAME }}" >> .env
-            echo "R2_FOLDER=${{ secrets.R2_FOLDER }}" >> .env
-            echo "R2_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }}" >> .env
-            echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env
-            echo "R2_ENDPOINT_URL=${{ secrets.R2_ENDPOINT_URL }}" >> .env
+      - name: Create .env file
+        shell: bash
+        run: |
+          echo "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${{ secrets.AIRFLOW__DATABASE__SQL_ALCHEMY_CONN }}" >> .env
+          echo "AIRFLOW__CORE__FERNET_KEY=${{ secrets.AIRFLOW__CORE__FERNET_KEY }}" >> .env
+          echo "_AIRFLOW_WWW_USER_USERNAME=${{ secrets._AIRFLOW_WWW_USER_USERNAME }}" >> .env
+          echo "_AIRFLOW_WWW_USER_PASSWORD=${{ secrets._AIRFLOW_WWW_USER_PASSWORD }}" >> .env
+          echo "_AIRFLOW_WWW_USER_FIRSTNAME=${{ secrets._AIRFLOW_WWW_USER_FIRSTNAME }}" >> .env
+          echo "_AIRFLOW_WWW_USER_LASTNAME=${{ secrets._AIRFLOW_WWW_USER_LASTNAME }}" >> .env
+          echo "AIRFLOW__WEBSERVER__SECRET_KEY=${{ secrets.AIRFLOW__WEBSERVER__SECRET_KEY }}" >> .env
+          echo "R2_FOLDER=${{ secrets.R2_FOLDER }}" >> .env
+          echo "R2_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }}" >> .env
+          echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env
+          echo "R2_ENDPOINT_URL=${{ secrets.R2_ENDPOINT_URL }}" >> .env
 
-        - name: Verify env file
-          run: |
-            if [ -f ".env" ]; then
-              echo "ENV 파일이 성공적으로 생성되었습니다"
-            else
-              echo "ENV 파일 생성 실패"
-              exit 1
-            fi
-  
+      - name: Verify env file
+        run: |
+          if [ -f ".env" ]; then
+            echo "ENV 파일이 성공적으로 생성되었습니다"
+          else
+            echo "ENV 파일 생성 실패"
+            exit 1
+          fi
+
   docker-build:
     needs: airflow-env-setup
-    runs-on: [ self-hosted ]
+    runs-on: [self-hosted]
     steps:
-      - name : Docker file build
-        shell : bash
-        run : |
+      - name: Docker file build
+        shell: bash
+        run: |
           docker compose -f docker-compose-airflow.yml down
           docker compose -f docker-compose-airflow.yml build
 
   airflow-sevice-run:
-      needs: docker-build
-      runs-on: [ self-hosted ]
-      steps:
-        - name : Run Airflow
-          shell : bash
-          run : |
-            docker compose -f docker-compose-airflow.yml up -d
+    needs: docker-build
+    runs-on: [self-hosted]
+    steps:
+      - name: Run Airflow
+        shell: bash
+        run: |
+          docker compose -f docker-compose-airflow.yml up -d
 
-        - name : Clean Docker image
-          shell : bash
-          run : |
-            docker image prune -a
+      - name: Clean Docker image
+        shell: bash
+        run: |
+          docker image prune -a
 
-        - name: clean up runner
-          uses: eviden-actions/clean-self-hosted-runner@v1.3.16
-          if: ${{ always() }}
+      - name: Clean Self-Runner
+        uses: eviden-actions/clean-self-hosted-runner@v1.3.16
+        if: ${{ always() }}
