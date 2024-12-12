@@ -1,0 +1,57 @@
+name: DDL-Migrate
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - flyway/DDL/**
+      - docker-compose-flyway.yml
+    branches: [main]
+
+jobs:
+  airflow-env-setup:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Create .env file
+        shell: bash
+        run: |
+          echo "FLYWAY_DATABASE_SCHEMAS=${{ secrets.FLYWAY_DATABASE_SCHEMAS }}" >> .env
+          echo "FlYWAY_DATABASE_URL=${{ secrets.FlYWAY_DATABASE_URL }}" >> .env
+          echo "FlYWAY_DATABASE_USER=${{ secrets.FlYWAY_DATABASE_USER }}" >> .env
+          echo "FlYWAY_DATABASE_PASSWORD=${{ secrets.FlYWAY_DATABASE_PASSWORD }}" >> .env
+
+      - name: Verify env file
+        run: |
+          if [ -f ".env" ]; then
+            echo "ENV 파일이 성공적으로 생성되었습니다"
+          else
+            echo "ENV 파일 생성 실패"
+            exit 1
+          fi
+
+  docker-run:
+    needs: airflow-env-setup
+    runs-on: [self-hosted]
+    steps:
+      - name: Flyway Run
+        shell: bash
+        run: |
+          docker compose -f docker-compose-flyway.yml up -d --build
+          docker-compose -f docker-compose-flyway.yml logs flyway
+          docker-compose -f docker-compose-flyway.yml rm -fsv
+
+  clean-up:
+    needs: docker-run
+    runs-on: [self-hosted]
+    steps:
+      - name: Clean Docker image
+        shell: bash
+        run: |
+          docker image prune -a
+
+      - name: Clean Self-Runner
+        uses: eviden-actions/clean-self-hosted-runner@v1.3.16
+        if: ${{ always() }}

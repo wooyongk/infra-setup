@@ -1,0 +1,14 @@
+services:
+  flyway:
+    image: flyway/flyway:latest
+    container_name: flyway
+    environment:
+      FLYWAY_SCHEMAS: ${FLYWAY_DATABASE_SCHEMAS}
+      FLYWAY_URL: ${FlYWAY_DATABASE_URL}
+      FLYWAY_USER: ${FlYWAY_DATABASE_USER}
+      FLYWAY_PASSWORD: ${FlYWAY_DATABASE_PASSWORD}
+      FLYWAY_CONNECT_RETRIES: 60
+
+    command: -locations=filesystem:/flyway/sql -X migrate
+    volumes:
+      - ./flyway/DDL:/flyway/sql
