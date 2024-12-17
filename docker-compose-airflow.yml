@@ -51,7 +51,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 8G
+          memory: 6G
 
   airflow-scheduler:
     <<: *airflow-common
@@ -72,36 +72,13 @@ services:
         limits:
           memory: 4G
 
-  airflow-triggerer:
-    <<: *airflow-common
-    container_name: airflow-triggerer
-    command: triggerer
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"',
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    restart: always
-    depends_on:
-      airflow-init:
-        condition: service_completed_successfully
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-
   airflow-init:
     <<: *airflow-common
     container_name: airflow-init
     entrypoint: /bin/bash
     command:
       - -c
-      - airflow db init &&
+      - airflow db migrate &&
         airflow users create
         --role Admin
         --username ${_AIRFLOW_WWW_USER_USERNAME}
@@ -117,9 +94,6 @@ services:
     ports:
       - 9123:9102
       - 8125:8125/udp
-    depends_on:
-      airflow-init:
-        condition: service_completed_successfully
 
   git-sync:
     image: databurst/git-sync:latest

@@ -11,7 +11,7 @@ on:
 
 jobs:
   airflow-env-setup:
-    runs-on: [self-hosted]
+    runs-on: [server-2]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -47,8 +47,8 @@ jobs:
       - name: Docker file build
         shell: bash
         run: |
-          docker compose -f docker-compose-airflow.yml down
-          docker compose -f docker-compose-airflow.yml build
+          docker-compose -f docker-compose-airflow.yml down
+          docker-compose -f docker-compose-airflow.yml build
 
   airflow-sevice-run:
     needs: docker-build
@@ -57,7 +57,7 @@ jobs:
       - name: Run Airflow
         shell: bash
         run: |
-          docker compose -f docker-compose-airflow.yml up -d
+          docker-compose -f docker-compose-airflow.yml up -d
 
       - name: Clean Docker image
         shell: bash
