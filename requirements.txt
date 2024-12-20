@@ -1,2 +1,6 @@
+# Packages without specific versions
 beautifulsoup4
+apache-airflow-providers-amazon[s3fs]
+
+# Packages with specific versions
 pandas == 2.1.4
