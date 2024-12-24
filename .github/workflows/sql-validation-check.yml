@@ -6,6 +6,10 @@ on:
       - flyway/DDL/**
     branches: [ dev ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate-sql:
     runs-on: ubuntu-latest
