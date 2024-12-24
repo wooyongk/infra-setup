@@ -9,8 +9,8 @@ on:
     branches: [main]
 
 jobs:
-  airflow-env-setup:
-    runs-on: [self-hosted]
+  env-setup:
+    runs-on: [server-1]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -33,8 +33,8 @@ jobs:
           fi
 
   docker-run:
-    needs: airflow-env-setup
-    runs-on: [self-hosted]
+    needs: env-setup
+    runs-on: [server-1]
     steps:
       - name: Flyway Run
         shell: bash
@@ -45,7 +45,7 @@ jobs:
 
   clean-up:
     needs: docker-run
-    runs-on: [self-hosted]
+    runs-on: [server-1]
     steps:
       - name: Clean Docker image
         shell: bash
