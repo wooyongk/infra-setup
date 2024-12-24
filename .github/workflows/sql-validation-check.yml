@@ -1,0 +1,125 @@
+name: SQL Validation Workflow
+
+on:
+  push:
+    paths:
+      - flyway/DDL/**
+    branches: [ dev ]
+
+jobs:
+  validate-sql:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract issue number from commit message
+        id: extract_issue
+        run: |
+          ISSUE_NUMBER=$(echo "${{ github.event.head_commit.message }}" | grep -oE '#[0-9]+' | head -n 1 | tr -d '#')
+          echo "ISSUE_NUMBER=$ISSUE_NUMBER" >> $GITHUB_ENV
+
+      - name: Set up MySQL with Docker
+        run: |
+          # MySQL Docker 컨테이너 실행
+          docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=testdb -p 3306:3306 -d mysql:latest
+
+          # MySQL이 준비될 때까지 기다리기 (10초)
+          echo "Waiting for MySQL to be ready..."
+          sleep 10  # 필요시 대기 시간 조정
+
+      - name: Check MySQL status
+        run: |
+          # MySQL 서버가 정상적으로 실행 중인지 확인
+          docker exec -e MYSQL_PWD=rootpassword mysql-container mysql -u root -e "SHOW DATABASES;"
+
+      - name: Validate SQL files
+        id: sql-validation
+        continue-on-error: true
+        run: |
+          TOTAL_FILES=0
+          SUCCESS_COUNT=0
+          FAILURE_COUNT=0
+          FAILED_FILES=""
+          ERROR_DETAILS=""
+          
+          for file in $(find flyway/DDL -name "*.sql"); do
+            TOTAL_FILES=$((TOTAL_FILES + 1))
+            echo "검증 중인 SQL 파일: $file"
+            if docker exec -i -e MYSQL_PWD=rootpassword mysql-container mysql -u root testdb < "$file" 2> temp_error.log; then
+              echo "✅ 성공: $file"
+              SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+            else
+              echo "❌ 실패: $file"
+              ERROR_CONTENT=$(cat temp_error.log)
+              echo "$ERROR_CONTENT"
+              FAILURE_COUNT=$((FAILURE_COUNT + 1))
+              FAILED_FILES+="${FAILURE_COUNT}. $file\n"
+              ERROR_DETAILS+="${FAILURE_COUNT}. $ERROR_CONTENT\n"
+            fi
+          done
+
+          # 실패한 파일 중 마지막 항목의 \n 제거
+          if [ "$FAILURE_COUNT" -gt 0 ]; then
+              FAILED_FILES=$(echo -e "$FAILED_FILES" | sed '$ s/$//')  # 마지막 개행 제거
+              ERROR_DETAILS=$(echo -e "$ERROR_DETAILS" | sed '$ s/$//')  # 마지막 개행 제거
+          fi
+          
+          {
+            echo "TOTAL_FILES=$TOTAL_FILES"
+            echo "SUCCESS_COUNT=$SUCCESS_COUNT"
+            echo "FAILURE_COUNT=$FAILURE_COUNT"
+            echo -e "FAILED_FILES=\"$FAILED_FILES\""
+            echo -e "ERROR_DETAILS=\"$ERROR_DETAILS\""
+          } > validation_results.txt
+
+      - name: Post validation results
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat validation_results.txt
+          source validation_results.txt
+          
+          if [ "$FAILURE_COUNT" -eq 0 ]; then
+            cat << EOF > comment.txt
+          ### :tada: SQL 검증 결과
+          
+          **상태:** ✅ 모든 SQL 스크립트가 성공적으로 실행되었습니다!
+          
+          **요약:**
+          - 전체 파일: $TOTAL_FILES
+          - 성공: $SUCCESS_COUNT
+          - 실패: $FAILURE_COUNT
+          
+          SQL 유효성 검사가 오류 없이 완료되었습니다! :clap:
+          EOF
+          else
+            cat << EOF > comment.txt
+          ### :warning: SQL 검증 결과
+          
+          **상태:** ❌ SQL 스크립트 실행 중 오류가 발생했습니다.
+          
+          **요약:**
+          - 전체 파일: $TOTAL_FILES
+          - 성공: $SUCCESS_COUNT
+          - 실패: $FAILURE_COUNT
+          
+          **실패한 파일:**
+          $FAILED_FILES
+          
+          **오류 상세:**
+          \`\`\`
+          $ERROR_DETAILS
+          \`\`\`
+          
+          위 오류를 수정한 후 다시 검증해주세요.
+          EOF
+          fi
+          
+          gh issue comment "$ISSUE_NUMBER" --body "$(cat comment.txt)"
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f mysql-container
