@@ -27,8 +27,8 @@ jobs:
         run: |
           echo "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${{ secrets.AIRFLOW__DATABASE__SQL_ALCHEMY_CONN }}" >> .env
           echo "AIRFLOW__CORE__FERNET_KEY=${{ secrets.AIRFLOW__CORE__FERNET_KEY }}" >> .env
-          echo "_AIRFLOW_WWW_USER_USERNAME=${{ secrets.AIRFLOW_USER_USERNAME }}" >> .env
-          echo "_AIRFLOW_WWW_USER_PASSWORD=${{ secrets.AIRFLOW_USER_PASSWORD }}" >> .env
+          echo "AIRFLOW_USER_USERNAME=${{ secrets.AIRFLOW_USER_USERNAME }}" >> .env
+          echo "AIRFLOW_USER_PASSWORD=${{ secrets.AIRFLOW_USER_PASSWORD }}" >> .env
           echo "AIRFLOW__WEBSERVER__SECRET_KEY=${{ secrets.AIRFLOW__WEBSERVER__SECRET_KEY }}" >> .env
           echo "R2_FOLDER=${{ secrets.R2_FOLDER }}" >> .env
           echo "R2_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }}" >> .env
