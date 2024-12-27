@@ -1,35 +1,40 @@
 name: Setup-Airflow
 
 on:
+  workflow_run:
+    workflows: [ "Build Airflow Docker Image"]
+    types:
+      - completed
   workflow_dispatch:
   push:
     paths:
-      - Airflow.Dockerfile
       - docker-compose-airflow.yml
-      - requirements.txt
     branches: [main]
+
+concurrency:
+  group: airflow-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   airflow-env-setup:
     runs-on: [server-2]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: Create .env file
         shell: bash
         run: |
           echo "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${{ secrets.AIRFLOW__DATABASE__SQL_ALCHEMY_CONN }}" >> .env
           echo "AIRFLOW__CORE__FERNET_KEY=${{ secrets.AIRFLOW__CORE__FERNET_KEY }}" >> .env
-          echo "_AIRFLOW_WWW_USER_USERNAME=${{ secrets._AIRFLOW_WWW_USER_USERNAME }}" >> .env
-          echo "_AIRFLOW_WWW_USER_PASSWORD=${{ secrets._AIRFLOW_WWW_USER_PASSWORD }}" >> .env
-          echo "_AIRFLOW_WWW_USER_FIRSTNAME=${{ secrets._AIRFLOW_WWW_USER_FIRSTNAME }}" >> .env
-          echo "_AIRFLOW_WWW_USER_LASTNAME=${{ secrets._AIRFLOW_WWW_USER_LASTNAME }}" >> .env
+          echo "_AIRFLOW_WWW_USER_USERNAME=${{ secrets.AIRFLOW_USER_USERNAME }}" >> .env
+          echo "_AIRFLOW_WWW_USER_PASSWORD=${{ secrets.AIRFLOW_USER_PASSWORD }}" >> .env
           echo "AIRFLOW__WEBSERVER__SECRET_KEY=${{ secrets.AIRFLOW__WEBSERVER__SECRET_KEY }}" >> .env
           echo "R2_FOLDER=${{ secrets.R2_FOLDER }}" >> .env
           echo "R2_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }}" >> .env
           echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env
           echo "R2_ENDPOINT_URL=${{ secrets.R2_ENDPOINT_URL }}" >> .env
+          echo "AZURE_REGISTRY=${{ secrets.AZURE_REGISTRY }}" >> .env
 
       - name: Verify env file
         run: |
@@ -44,6 +49,13 @@ jobs:
     needs: airflow-env-setup
     runs-on: [self-hosted]
     steps:
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.AZURE_REGISTRY }}
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
       - name: Docker file build
         shell: bash
         run: |
@@ -65,5 +77,5 @@ jobs:
           docker image prune -a
 
       - name: Clean Self-Runner
-        uses: eviden-actions/clean-self-hosted-runner@v1.3.16
+        uses: eviden-actions/clean-self-hosted-runner@v1
         if: ${{ always() }}
