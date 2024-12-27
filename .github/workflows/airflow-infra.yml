@@ -9,6 +9,7 @@ on:
   push:
     paths:
       - docker-compose-airflow.yml
+      - .github/workflows/airflow-infra.yml
     branches: [main]
 
 concurrency:
@@ -45,7 +46,7 @@ jobs:
             exit 1
           fi
 
-  docker-build:
+  airflow-sevice-run:
     needs: airflow-env-setup
     runs-on: [self-hosted]
     steps:
@@ -62,10 +63,6 @@ jobs:
           docker-compose -f docker-compose-airflow.yml down
           docker-compose -f docker-compose-airflow.yml build
 
-  airflow-sevice-run:
-    needs: docker-build
-    runs-on: [self-hosted]
-    steps:
       - name: Run Airflow
         shell: bash
         run: |
