@@ -1,6 +1,5 @@
 x-airflow-common: &airflow-common
-  build:
-    dockerfile: Airflow.Dockerfile
+  image: ${AZURE_REGISTRY}/infra/airflow:latest
   environment:
     # Core settings
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -99,11 +98,11 @@ services:
       - airflow db migrate &&
         airflow users create
         --role Admin
-        --username ${_AIRFLOW_WWW_USER_USERNAME}
-        --password ${_AIRFLOW_WWW_USER_PASSWORD}
+        --username ${AIRFLOW_USER_USERNAME}
+        --password ${AIRFLOW_USER_PASSWORD}
         --email airflow@airflow.com
-        --firstname ${_AIRFLOW_WWW_USER_FIRSTNAME}
-        --lastname ${_AIRFLOW_WWW_USER_LASTNAME}
+        --firstname wooyong
+        --lastname kim
 
   statsd-exporter:
     image: prom/statsd-exporter
