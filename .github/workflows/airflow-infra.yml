@@ -61,7 +61,7 @@ jobs:
         shell: bash
         run: |
           docker-compose -f docker-compose-airflow.yml down
-          docker image prune -a
+          docker image prune -f
           docker-compose -f docker-compose-airflow.yml build
 
       - name: Run Airflow
