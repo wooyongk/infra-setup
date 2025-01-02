@@ -61,17 +61,14 @@ jobs:
         shell: bash
         run: |
           docker-compose -f docker-compose-airflow.yml down
+          docker pull ${{ secrets.AZURE_REGISTRY }}/infra/airflow:latest
           docker-compose -f docker-compose-airflow.yml build
+          docker image prune -f
 
       - name: Run Airflow
         shell: bash
         run: |
           docker-compose -f docker-compose-airflow.yml up -d
-
-      - name: Clean Docker image
-        shell: bash
-        run: |
-          docker image prune -a
 
       - name: Clean Self-Runner
         uses: eviden-actions/clean-self-hosted-runner@v1
