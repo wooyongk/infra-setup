@@ -22,7 +22,7 @@ jobs:
           docker-compose -f docker-compose-monitoring.yml build
           docker image prune -f
 
-      - name: Run Airflow
+      - name: Run Docker compose
         shell: bash
         run: |
           docker-compose -f docker-compose-monitoring.yml up -d
