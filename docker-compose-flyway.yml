@@ -9,6 +9,6 @@ services:
       FLYWAY_PASSWORD: ${FlYWAY_DATABASE_PASSWORD}
       FLYWAY_CONNECT_RETRIES: 60
 
-    command: -locations=filesystem:/flyway/sql -X migrate
+    command: -locations=filesystem:/flyway/sql -X repair migrate
     volumes:
       - ./flyway/DDL:/flyway/sql

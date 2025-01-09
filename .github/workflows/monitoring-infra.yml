@@ -1,0 +1,32 @@
+name: Setup-Monitoring
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - docker-compose-monitoring.yml
+      - .github/workflows/monitoring-infra.yml
+    branches: [main]
+
+jobs:
+  Monitoring-deploy:
+    runs-on: [server-1]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Docker file build
+        shell: bash
+        run: |
+          docker-compose -f docker-compose-monitoring.yml down
+          docker-compose -f docker-compose-monitoring.yml build
+          docker image prune -f
+
+      - name: Run Docker compose
+        shell: bash
+        run: |
+          docker-compose -f docker-compose-monitoring.yml up -d
+
+      - name: Clean Self-Runner
+        uses: eviden-actions/clean-self-hosted-runner@v1
+        if: ${{ always() }}
