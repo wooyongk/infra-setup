@@ -8,7 +8,7 @@ x-redash-environment: &redash-environment
   REDASH_HOST: http://localhost:5000
   REDASH_LOG_LEVEL: "INFO"
   REDASH_REDIS_URL: "redis://redis:6379/0"
-  REDASH_DATABASE_URL: "postgresql://postgres@postgres/postgres"
+  REDASH_DATABASE_URL: "postgresql://postgres:${REDASH_DATABASE_PASSWORD}@postgres/postgres"
   REDASH_RATELIMIT_ENABLED: "false"
   REDASH_ENFORCE_CSRF: "true"
   REDASH_GUNICORN_TIMEOUT: 60
@@ -48,6 +48,8 @@ services:
 
   postgres:
     image: postgres:13
+    environment:
+      POSTGRES_PASSWORD: ${REDASH_DATABASE_PASSWORD}
     volumes:
       - postgres-redash-volume:/var/lib/postgresql/data
     restart: always
