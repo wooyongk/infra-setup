@@ -1,0 +1,210 @@
+//client\app\assets\less\inc\table.less
+//pastel-label 추가
+.table {
+  margin-bottom: 0;
+
+  th.sortable-column {
+    cursor: pointer;
+  }
+
+  &:not(.table-striped) > thead > tr > th {
+    background-color: #fafafa;
+  }
+
+  [class*="bg-"] {
+    & > tr > th {
+      color: #fff;
+      border-bottom: 0;
+      background: transparent !important;
+    }
+
+    & + tbody > tr:first-child > td {
+      border-top: 0;
+    }
+  }
+
+  & > thead > tr > th {
+    vertical-align: middle;
+    font-weight: 500;
+    color: #333;
+    border-width: 1px;
+    text-transform: uppercase;
+    padding: 15px 10px;
+  }
+
+  & > thead > tr,
+  & > tbody > tr,
+  & > tfoot > tr {
+    & > th,
+    & > td {
+      &:first-child {
+        padding-left: 30px;
+      }
+
+      &:last-child {
+        padding-right: 30px;
+      }
+    }
+  }
+
+  tbody > tr:last-child > td {
+    padding-bottom: 20px;
+  }
+}
+
+.table-bordered {
+  border: 0;
+
+  & > tbody > tr {
+    & > td,
+    & > th {
+      border-bottom: 0;
+      border-left: 0;
+
+      &:last-child {
+        border-right: 0;
+      }
+    }
+  }
+
+  & > thead > tr > th {
+    border-left: 0;
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+}
+
+.table-vmiddle {
+  td {
+    vertical-align: middle !important;
+  }
+}
+
+.table-responsive {
+  border: 0;
+}
+
+.tile .table {
+  & > thead:not([class*="bg-"]) > tr > th {
+    border-top: 1px solid @table-border-color;
+  }
+}
+
+.table-hover > tbody > tr:hover {
+  background-color: #f4f4f4;
+}
+
+.table-data {
+  thead > tr > th {
+    white-space: nowrap;
+  }
+
+  tbody > tr > td {
+    padding-top: 5px !important;
+  }
+
+  .btn-favorite,
+  .btn-archive {
+    font-size: 15px;
+  }
+}
+
+.table-main-title {
+  font-weight: 500;
+  line-height: 1.7 !important;
+}
+
+.pastel-label {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 15px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  text-transform: capitalize;
+}
+
+.pastel-label.redshift {
+  background-color: #b3e5fc; /* 파스텔 블루 */
+  color: #0277bd; /* 파스텔 블루 텍스트 */
+}
+
+.pastel-label.athena {
+  background-color: #ffe0b2; /* 파스텔 주황 */
+  color: #e65100; /* 진한 주황 텍스트 */
+}
+
+.pastel-label.rds_mysql {
+  background-color: #fff9c4; /* 파스텔 노란색 */
+  color: #f57f17; /* 진한 노란색 텍스트 */
+}
+
+.pastel-label.mysql {
+  background-color: #fff9c4; /* 파스텔 노란색 */
+  color: #f57f17; /* 진한 노란색 텍스트 */
+}
+
+.pastel-label.pg {
+  background-color: #bbdefb; /* 진한 블루 배경 */
+  color: #0d47a1; /* 진한 블루 텍스트 */
+}
+
+/* 정의되지 않은 타입에 대한 기본 회색 파스텔 톤 */
+.pastel-label.default {
+  background-color: #e0e0e0; /* 파스텔 회색 */
+  color: #757575; /* 회색 텍스트 */
+}
+
+
+.pastel-label img, .pastel-label svg {
+  margin-right: 5px; /* 이미지와 텍스트 사이 간격 */
+  width: 16px;
+  height: 16px;
+}
+
+.btn-favorite {
+  color: #d4d4d4;
+  transition: all 0.25s ease-in-out;
+
+  .fa-star {
+    color: @yellow-darker;
+  }
+
+  &:hover,
+  &:focus {
+    color: @yellow-darker;
+    cursor: pointer;
+
+    .fa-star {
+      filter: saturate(75%);
+      opacity: 0.75;
+    }
+  }
+}
+
+.btn-archive {
+  color: #d4d4d4;
+  transition: all 0.25s ease-in-out;
+
+  &:hover,
+  &:focus {
+    color: @gray-light;
+  }
+
+  .fa-archive {
+    color: @gray-light;
+  }
+}
+
+.table > thead > tr > th {
+  text-transform: none;
+}
+
+.table-data .label-tag {
+  display: inline-block;
+  max-width: 135px;
+}
