@@ -1,0 +1,36 @@
+x-redash-service: &redash-service
+  image: wooyong.azurecr.io/infra/redash:latest
+  depends_on:
+    - postgres
+    - redis
+  env_file: C:\Users\T8G-2305-PC-003\Documents\infra-setup\.env
+
+services:
+  server:
+    <<: *redash-service
+    command: server
+    ports:
+      - "5000:5000"
+    environment:
+      REDASH_WEB_WORKERS: 2
+
+  worker:
+    <<: *redash-service
+    command: worker
+    environment:
+      QUEUES: "schemas queries celery"
+      WORKERS_COUNT: 2
+
+  redis:
+    image: redis:7.2-alpine
+    restart: always
+
+  postgres:
+    image: postgres:13
+    env_file: C:\Users\T8G-2305-PC-003\Documents\infra-setup\.env
+    volumes:
+      - postgres-redash-volume:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres-redash-volume:

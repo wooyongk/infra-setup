@@ -61,6 +61,7 @@ jobs:
         shell: bash
         run: |
           docker-compose -f docker-compose-airflow.yml down
+          docker volume rm $(docker volume ls -qf dangling=true)
           docker pull ${{ secrets.AZURE_REGISTRY }}/infra/airflow:latest
           docker-compose -f docker-compose-airflow.yml build
           docker image prune -f
