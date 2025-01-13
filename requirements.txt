@@ -1,6 +1,7 @@
 # Packages without specific versions
 beautifulsoup4
 apache-airflow-providers-amazon[s3fs]
+apache-airflow-providers-telegram
 yfinance
 
 # Packages with specific versions
