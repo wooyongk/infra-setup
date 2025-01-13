@@ -1,0 +1,57 @@
+name: Setup-Redash
+
+on:
+  workflow_run:
+    workflows: [ "Build Custom Redash Docker Image"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  Redash-deploy:
+    runs-on: [server-1]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        shell: bash
+        run: |
+          echo "REDASH_COOKIE_SECRET=${{ secrets.REDASH_COOKIE_SECRET }}" >> .env
+          echo "REDASH_SECRET_KEY=${{ secrets.REDASH_SECRET_KEY }}" >> .env
+          echo "LOG_LOKI_URL=${{ secrets.LOG_LOKI_URL }}" >> .env
+          echo "AZURE_REGISTRY=${{ secrets.AZURE_REGISTRY }}" >> .env
+
+      - name: Verify env file
+        run: |
+          if [ -f ".env" ]; then
+            echo "ENV 파일이 성공적으로 생성되었습니다"
+          else
+            echo "ENV 파일 생성 실패"
+            exit 1
+          fi
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.AZURE_REGISTRY }}
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - name: Docker file build
+        shell: bash
+        run: |
+          docker-compose -f docker-compose-redash.yml down
+          docker pull ${{ secrets.AZURE_REGISTRY }}/infra/airflow:latest
+          docker-compose -f docker-compose-redash.yml build
+          docker image prune -f
+
+      - name: Run Redash
+        shell: bash
+        run: |
+          docker-compose -f docker-compose-redash.yml run --rm server create_db
+          docker-compose -f docker-compose-redash.yml up -d
+
+      - name: Clean Self-Runner
+        uses: eviden-actions/clean-self-hosted-runner@v1
+        if: ${{ always() }}

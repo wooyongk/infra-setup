@@ -1,9 +1,20 @@
 x-redash-service: &redash-service
-  image: wooyong.azurecr.io/infra/redash:latest
+  image: ${AZURE_REGISTRY}/infra/redash:latest
   depends_on:
     - postgres
     - redis
-  env_file: C:\Users\T8G-2305-PC-003\Documents\infra-setup\.env
+
+x-redash-environment: &redash-environment
+  REDASH_HOST: http://localhost:5000
+  REDASH_LOG_LEVEL: "INFO"
+  REDASH_REDIS_URL: "redis://redis:6379/0"
+  REDASH_DATABASE_URL: "postgresql://postgres@postgres/postgres"
+  REDASH_RATELIMIT_ENABLED: "false"
+  REDASH_ENFORCE_CSRF: "true"
+  REDASH_GUNICORN_TIMEOUT: 60
+  PYTHONUNBUFFERED: 0
+  REDASH_COOKIE_SECRET: ${REDASH_COOKIE_SECRET}
+  REDASH_SECRET_KEY: ${REDASH_SECRET_KEY}
 
 services:
   server:
@@ -12,14 +23,24 @@ services:
     ports:
       - "5000:5000"
     environment:
+      <<: *redash-environment
       REDASH_WEB_WORKERS: 2
+    logging:
+      driver: "loki"
+      options:
+        loki-url: ${LOG_LOKI_URL}
 
   worker:
     <<: *redash-service
     command: worker
     environment:
+      <<: *redash-environment
       QUEUES: "schemas queries celery"
       WORKERS_COUNT: 2
+    logging:
+      driver: "loki"
+      options:
+        loki-url: ${LOG_LOKI_URL}
 
   redis:
     image: redis:7.2-alpine
@@ -27,7 +48,6 @@ services:
 
   postgres:
     image: postgres:13
-    env_file: C:\Users\T8G-2305-PC-003\Documents\infra-setup\.env
     volumes:
       - postgres-redash-volume:/var/lib/postgresql/data
     restart: always
