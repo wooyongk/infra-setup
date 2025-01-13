@@ -6,6 +6,10 @@ on:
     types:
       - completed
   workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/airflow-infra.yml
+    branches: ["dev"]
 
 jobs:
   Redash-deploy:
@@ -19,6 +23,7 @@ jobs:
         run: |
           echo "REDASH_COOKIE_SECRET=${{ secrets.REDASH_COOKIE_SECRET }}" >> .env
           echo "REDASH_SECRET_KEY=${{ secrets.REDASH_SECRET_KEY }}" >> .env
+          echo "REDASH_DATABASE_PASSWORD=${{ secrets.REDASH_DATABASE_PASSWORD }}" >> .env
           echo "LOG_LOKI_URL=${{ secrets.LOG_LOKI_URL }}" >> .env
           echo "AZURE_REGISTRY=${{ secrets.AZURE_REGISTRY }}" >> .env
 
