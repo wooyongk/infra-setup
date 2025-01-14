@@ -6,10 +6,6 @@ on:
     types:
       - completed
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/airflow-infra.yml
-    branches: ["dev"]
 
 jobs:
   Redash-deploy:
