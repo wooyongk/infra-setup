@@ -36,6 +36,7 @@ jobs:
           echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> .env
           echo "R2_ENDPOINT_URL=${{ secrets.R2_ENDPOINT_URL }}" >> .env
           echo "AZURE_REGISTRY=${{ secrets.AZURE_REGISTRY }}" >> .env
+          echo "LOG_LOKI_URL=${{ secrets.LOG_LOKI_URL }}" >> .env
 
       - name: Verify env file
         run: |
