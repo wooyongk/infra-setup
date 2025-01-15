@@ -5,6 +5,7 @@ apache-airflow-providers-telegram
 yfinance
 finance-datareader
 opendartreader
+plotly
 
 # Packages with specific versions
 pandas == 2.1.4
