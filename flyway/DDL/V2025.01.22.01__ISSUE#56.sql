@@ -1,0 +1,1 @@
+alter table stock_basic_daily_price modify open decimal(14, 6) not null comment '시작가';
