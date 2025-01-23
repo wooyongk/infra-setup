@@ -20,6 +20,7 @@ x-airflow-common: &airflow-common
     # Webserver settings
     AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE: "Asia/Seoul"
     AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
+    AIRFLOW__WEBSERVER__WARN_DEPLOYMENT_EXPOSURE: False
 
     # Logging settings
     AIRFLOW__LOGGING__REMOTE_LOGGING: True
