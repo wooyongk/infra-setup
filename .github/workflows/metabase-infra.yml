@@ -1,0 +1,47 @@
+name: Setup-MetaBase
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - docker-compose-metabase.yml
+    branches: [main]
+jobs:
+  Redash-deploy:
+    runs-on: [server-1]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        shell: bash
+        run: |
+          echo "METABASE_DATABASE_USER=${{ secrets.METABASE_DATABASE_USER }}" >> .env
+          echo "METABASE_DATABASE_NAME=${{ secrets.METABASE_DATABASE_NAME }}" >> .env
+          echo "METABASE_DATABASE_PASSWORD=${{ secrets.METABASE_DATABASE_PASSWORD }}" >> .env
+          echo "LOG_LOKI_URL=${{ secrets.LOG_LOKI_URL }}" >> .env
+
+      - name: Verify env file
+        run: |
+          if [ -f ".env" ]; then
+            echo "ENV 파일이 성공적으로 생성되었습니다"
+          else
+            echo "ENV 파일 생성 실패"
+            exit 1
+          fi
+
+      - name: Docker file build
+        shell: bash
+        run: |
+          docker-compose -f docker-compose-metabase.yml down
+          docker-compose -f docker-compose-metabase.yml build
+          docker image prune -f
+
+      - name: Run Redash
+        shell: bash
+        run: |
+          docker-compose -f docker-compose-metabase.yml up -d
+
+      - name: Clean Self-Runner
+        uses: eviden-actions/clean-self-hosted-runner@v1
+        if: ${{ always() }}
