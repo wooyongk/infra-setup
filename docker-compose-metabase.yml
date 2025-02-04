@@ -1,0 +1,43 @@
+services:
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    volumes:
+      - services-metabase-volume:/dev/random:ro
+    ports:
+      - 4000:3000
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: ${METABASE_DATABASE_NAME}
+      MB_DB_PORT: 5432
+      MB_DB_USER: ${METABASE_DATABASE_USER}
+      MB_DB_PASS: ${METABASE_DATABASE_PASSWORD}
+      MB_DB_HOST: postgres
+    healthcheck:
+      test: curl --fail -I http://localhost:3000/api/health || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "loki"
+      options:
+        loki-url: ${LOG_LOKI_URL}
+
+  postgres:
+    image: postgres:13
+    container_name: metabase-postgres
+    environment:
+      POSTGRES_USER: ${METABASE_DATABASE_USER}
+      POSTGRES_DB: ${METABASE_DATABASE_NAME}
+      POSTGRES_PASSWORD: ${METABASE_DATABASE_PASSWORD}
+    volumes:
+      - postgres-metabase-volume:/var/lib/postgresql/data
+    logging:
+      driver: "loki"
+      options:
+        loki-url: ${LOG_LOKI_URL}
+
+
+volumes:
+  services-metabase-volume:
+  postgres-metabase-volume:
