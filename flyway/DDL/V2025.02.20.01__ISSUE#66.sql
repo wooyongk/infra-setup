@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS dev_data.flight_departures
+CREATE TABLE IF NOT EXISTS flight_departures
 (
     nkey                  INT AUTO_INCREMENT NOT NULL COMMENT '고유 식별자',
     fid                   VARCHAR(40)        NOT NULL COMMENT '항공편 고유 식별자',
