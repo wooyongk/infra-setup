@@ -48,7 +48,7 @@ jobs:
           FAILED_FILES=""
           ERROR_DETAILS=""
           
-          for file in $(find flyway/DDL -name "*.sql"); do
+          for file in $(find flyway/DDL -name "*.sql" | sort); do
             TOTAL_FILES=$((TOTAL_FILES + 1))
             echo "검증 중인 SQL 파일: $file"
             if docker exec -i -e MYSQL_PWD=rootpassword mysql-container mysql -u root testdb < "$file" 2> temp_error.log; then
